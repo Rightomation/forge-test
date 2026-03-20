@@ -27,14 +27,19 @@ Every Next app in `frontend/` **must** include:
 - Keep `backend/requirements.txt` and `backend/Dockerfile` aligned with imports.
 - Prefer explicit schemas and routers under `backend/app/`.
 
-## Where the orchestrator lives
+## Forge pipeline script (Anthropic)
 
-The multi-agent driver (`forge_agents_v2.py` and its `.env`) is **not** in this repo by default; it may live on another machine (e.g. `~/forge/`). To run the full pipeline on this checkout:
+- **In repo:** [`scripts/forge_agents_v2.py`](scripts/forge_agents_v2.py) — install deps (`pip install anthropic python-dotenv requests`), set `.env`, then:
+  ```bash
+  cd scripts
+  python forge_agents_v2.py "Your app idea" "https://github.com/org/new-repo.git"
+  ```
+- **Requires:** `ANTHROPIC_API_KEY`. Optional: `ANTHROPIC_MODEL`, `TELEGRAM_*`, `EMAIL_FROM` / `EMAIL_TO` / `EMAIL_PASSWORD` (or `SMTP_*` / `NOTIFY_EMAIL` fallbacks). See root [`.env.example`](.env.example).
+- **Git:** `git push` runs from the generated project folder; configure credentials on that machine. Set `FORGE_GIT_FORCE=1` only if you intentionally need `--force` (dangerous on shared repos).
 
-1. Copy or sync `forge_agents_v2.py` (and any `requirements.txt` it needs) into a folder you control, e.g. `forge/` next to this repo.
-2. Copy `.env.example` → `.env` and fill keys.
-3. Point the script’s **output directory** at this repo (or a subdirectory) so generated files land in `frontend/` and `backend/` consistently.
-4. Run the script from the environment where API keys and Git credentials are available.
+## VPS copy
+
+You can `scp` the same script to `~/forge/` on a server; use a `.env` there with `ANTHROPIC_API_KEY` and run from the directory where you want `./<app_name>/` created (or symlink `scripts/forge_agents_v2.py`).
 
 ## Suggested workflow for new products
 
