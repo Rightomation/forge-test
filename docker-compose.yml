@@ -1,17 +1,27 @@
-version: '3.8'
 services:
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        # Browser must reach this URL; set in a .env next to this file, e.g. NEXT_PUBLIC_API_URL=http://YOUR_VPS_IP:8000
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://127.0.0.1:8000}
     ports:
       - "3000:3000"
     depends_on:
       - backend
-    environment:
-      - NEXT_PUBLIC_API_URL=http://backend:8000
 
   backend:
     build: ./backend
     ports:
       - "8000:8000"
+    volumes:
+      # SQLite survives container rebuilds (named volume)
+      - backend_sqlite:/app/data
     environment:
-      - DATABASE_URL=sqlite:///./app.db
+      # Four slashes = absolute path inside container
+      - DATABASE_URL=sqlite:////app/data/app.db
+      # Override via repo-root `.env`: SECRET_KEY=...
+      - SECRET_KEY=${SECRET_KEY:-dev-only-change-me-in-production-min-32-chars-please}
+
+volumes:
+  backend_sqlite:
