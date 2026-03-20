@@ -179,6 +179,7 @@ volumes:
     if os.environ.get("FORGE_GIT_FORCE", "").lower() in ("1", "true", "yes"):
         push_cmd.append("--force")
 
+    git_ok = True
     for cmd in [
         ["git", "init"],
         ["git", "add", "."],
@@ -189,8 +190,13 @@ volumes:
     ]:
         r = subprocess.run(cmd, cwd=project_dir, capture_output=True, text=True)
         if r.returncode != 0:
+            git_ok = False
             print(f"⚠️  {' '.join(cmd)} → {r.stderr.strip() or r.stdout.strip()}")
-    print(f"📦  Push attempted for {repo_url}")
+    if git_ok:
+        print(f"📦  Pushed to {repo_url}")
+    else:
+        print(f"⚠️  Git did not complete successfully. Files are on disk: {project_dir.resolve()}")
+    return git_ok
 
 
 def notify_telegram(message):
@@ -305,13 +311,17 @@ def build_app(app_description, github_repo_url):
     )
 
     print(f"✅  {len(fe_files)} frontend files, {len(be_files)} backend files written.")
-    save_and_push(app_name, project_dir, github_repo_url)
+    pushed = save_and_push(app_name, project_dir, github_repo_url)
 
     status = "✅ APPROVED" if qa.get("approved") else f"⚠️ {len(qa_issues)} remaining issues"
-    msg = f"🚀 *{app_name}* built!\n*Status:* {status}\n*QA passes:* {iteration}\n*Repo:* {github_repo_url}\n\n{qa_summary}"
+    git_line = "*Git push:* ok" if pushed else "*Git push:* FAILED (project only on this machine)"
+    msg = f"🚀 *{app_name}* built!\n*Status:* {status}\n*QA passes:* {iteration}\n{git_line}\n*Repo URL:* {github_repo_url}\n\n{qa_summary}"
     notify_telegram(msg)
     notify_email(f"🚀 Forge: {app_name} built!", msg.replace("*", ""))
-    print(f"\n✅  Done! {github_repo_url}\n")
+    banner = "✅" if pushed else "⚠️"
+    print(f"\n{banner}  Done! {github_repo_url}")
+    if not pushed:
+        print(f"   (Build output: {project_dir.resolve()} — fix Git remote/credentials and push manually.)\n")
 
 
 if __name__ == "__main__":
