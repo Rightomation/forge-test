@@ -166,6 +166,47 @@ docker compose up -d --build
 
 ---
 
+## 11. Forge LLM agents on the VPS (not the same as `docker compose`)
+
+`docker compose` only runs the **Next.js + FastAPI** app. The **Forge multi-agent pipeline** (`scripts/forge_agents_v2.py`) is a separate **Python script**: Team Lead, UI/UX, Frontend, Backend, and QA are **roles** that run **inside one process** when you execute the script (they call the Anthropic API). Nothing in Compose starts them automatically.
+
+To run those agents **on the VPS**:
+
+1. SSH into the server (same machine where the repo lives, e.g. `/opt/forge-test`).
+2. Install Python and a venv (Ubuntu):
+
+   ```bash
+   apt install -y python3 python3-venv python3-pip
+   cd /opt/forge-test/scripts
+   python3 -m venv .venv
+   source .venv/bin/activate
+   pip install anthropic python-dotenv requests
+   ```
+
+3. Put your **Anthropic** key where `python-dotenv` will find it. The script calls `load_dotenv()` for the **current working directory**, so either:
+   - **`/opt/forge-test/.env`** — then run from the repo root:  
+     `cd /opt/forge-test && source scripts/.venv/bin/activate && python scripts/forge_agents_v2.py "…" "https://…"`, or  
+   - **`/opt/forge-test/scripts/.env`** — then run from `scripts/` as below.  
+   You can copy [`.env.example`](./.env.example) as a template. Alternatively `export ANTHROPIC_API_KEY=...` in the shell.
+
+4. **Git** must be available and **credentials** configured if the script should `git push` to GitHub (see `AGENTS.md` / script usage).
+
+5. Run the pipeline:
+
+   ```bash
+   cd /opt/forge-test
+   source scripts/.venv/bin/activate
+   python scripts/forge_agents_v2.py "Your app idea" "https://github.com/org/target-repo.git"
+   ```
+
+That is what makes **all Forge agents** usable **on the VPS**: same code as your laptop, with keys and git set on the server.
+
+### OpenClaw (separate product)
+
+**OpenClaw** is not part of this repository. If you want OpenClaw and **cluster workers** as long-running services on the same VPS, follow **OpenClaw’s own** install/run docs (often additional containers or processes), then use **Traefik** or Compose on that host to route and secure them. This repo does not wire OpenClaw automatically.
+
+---
+
 ## Troubleshooting
 
 | Symptom | What to check |
