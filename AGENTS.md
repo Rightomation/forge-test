@@ -1,5 +1,11 @@
 # Agent instructions (Forge / product builds)
 
+## Single point of contact: Alora
+
+For day-to-day work, the **user’s primary agent is Alora** — ideation first, then a written charter, then delivery. See [`ALORA.md`](./ALORA.md). In chat, reference `@ALORA.md` so the assistant adopts that role.
+
+---
+
 Use this file as the **project contract** when Cursor, OpenClaw, or an external multi-agent pipeline generates or changes code in this repository.
 
 ## What “done” means
