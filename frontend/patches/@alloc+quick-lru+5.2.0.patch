@@ -1,0 +1,13 @@
+diff --git a/node_modules/@alloc/quick-lru/index.js b/node_modules/@alloc/quick-lru/index.js
+index 7eeced2..4fef786 100644
+--- a/node_modules/@alloc/quick-lru/index.js
++++ b/node_modules/@alloc/quick-lru/index.js
+@@ -114,7 +114,7 @@ class QuickLRU {
+ 		if (this.cache.has(key)) {
+ 			this.cache.set(key, {
+ 				value,
+-				maxAge
++				expiry: maxAge
+ 			});
+ 		} else {
+ 			this._set(key, {value, expiry: maxAge});

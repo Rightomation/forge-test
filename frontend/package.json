@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "patch-package"
   },
   "dependencies": {
     "next": "14.2.5",
@@ -34,5 +35,8 @@
     "@radix-ui/react-tooltip": "^1.1.2",
     "clsx": "^2.1.1",
     "tailwind-merge": "^2.4.0"
+  },
+  "devDependencies": {
+    "patch-package": "^8.0.0"
   }
 }
